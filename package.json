@@ -5,6 +5,7 @@
   "main": "index.html",
   "scripts": {
     "start": "http-server",
+    "dev": "http-server -c-1",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": ["invoice", "pdf", "generator"],
