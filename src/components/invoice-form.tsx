@@ -1,72 +1,29 @@
 import { useState } from 'react'
-import type { Invoice, InvoiceItem, Currency } from '@/types/invoice'
-import { generateInvoiceNumber, formatCurrency, addDays } from '@/lib/utils'
+import { useInvoiceStore } from '@/stores/invoice-store'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { formatCurrency } from '@/lib/utils'
+import { generatePDF } from '@/lib/pdf'
+import { InvoicePreview } from './invoice-preview'
 
 export function InvoiceForm() {
-  const [invoice, setInvoice] = useState<Invoice>({
-    id: crypto.randomUUID(),
-    number: generateInvoiceNumber(),
-    currency: 'EUR',
-    taxRate: 20,
-    from: {
-      name: '',
-      vatNumber: '',
-      address: '',
-    },
-    to: {
-      name: '',
-      vatNumber: '',
-      address: '',
-    },
-    items: [
-      {
-        id: crypto.randomUUID(),
-        description: '',
-        quantity: 1,
-        price: 0,
-      },
-    ],
-    issueDate: new Date().toISOString().split('T')[0],
-    dueDate: addDays(new Date(), 30).toISOString().split('T')[0],
-  })
-
-  const addItem = () => {
-    setInvoice(prev => ({
-      ...prev,
-      items: [
-        ...prev.items,
-        {
-          id: crypto.randomUUID(),
-          description: '',
-          quantity: 1,
-          price: 0,
-        },
-      ],
-    }))
-  }
-
-  const removeItem = (id: string) => {
-    setInvoice(prev => ({
-      ...prev,
-      items: prev.items.filter(item => item.id !== id),
-    }))
-  }
-
-  const updateItem = (id: string, updates: Partial<InvoiceItem>) => {
-    setInvoice(prev => ({
-      ...prev,
-      items: prev.items.map(item =>
-        item.id === id ? { ...item, ...updates } : item
-      ),
-    }))
-  }
-
-  const updateInvoice = (updates: Partial<Invoice>) => {
-    setInvoice(prev => ({ ...prev, ...updates }))
-  }
+  const [isPreview, setIsPreview] = useState(false)
+  const {
+    invoice,
+    updateInvoice,
+    addItem,
+    removeItem,
+    updateItem,
+    saveDraft,
+    resetInvoice,
+  } = useInvoiceStore()
 
   const calculateSubtotal = () => {
-    return invoice.items.reduce((sum, item) => sum + item.quantity * item.price, 0)
+    return invoice.items.reduce(
+      (sum, item) => sum + item.quantity * item.price,
+      0
+    )
   }
 
   const calculateTax = () => {
@@ -77,6 +34,24 @@ export function InvoiceForm() {
     return calculateSubtotal() + calculateTax()
   }
 
+  const handleGeneratePDF = async () => {
+    await generatePDF(invoice)
+  }
+
+  if (isPreview) {
+    return (
+      <div className="space-y-8">
+        <div className="flex justify-end space-x-4 no-print">
+          <Button variant="outline" onClick={() => setIsPreview(false)}>
+            Edit
+          </Button>
+          <Button onClick={handleGeneratePDF}>Download PDF</Button>
+        </div>
+        <InvoicePreview invoice={invoice} />
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-8 bg-background shadow-lg rounded-lg p-8">
       <div className="flex justify-between items-start">
@@ -85,7 +60,41 @@ export function InvoiceForm() {
           <div className="text-xl text-primary mt-2">{invoice.number}</div>
         </div>
         <div>
-          <img src="/api/placeholder/200/100" alt="Company Logo" className="rounded-lg" />
+          <img
+            src="/api/placeholder/200/100"
+            alt="Company Logo"
+            className="rounded-lg"
+          />
+        </div>
+      </div>
+
+      <div className="flex gap-4 p-4 bg-muted rounded-lg">
+        <div className="flex items-center gap-2">
+          <label>Currency:</label>
+          <select
+            className="bg-background border rounded px-2 py-1"
+            value={invoice.currency}
+            onChange={(e) =>
+              updateInvoice({ currency: e.target.value as 'EUR' | 'USD' | 'GBP' })
+            }
+          >
+            <option value="EUR">EUR (€)</option>
+            <option value="USD">USD ($)</option>
+            <option value="GBP">GBP (£)</option>
+          </select>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <label>VAT Rate:</label>
+          <Input
+            type="number"
+            className="w-20"
+            value={invoice.taxRate}
+            onChange={(e) =>
+              updateInvoice({ taxRate: parseFloat(e.target.value) || 0 })
+            }
+          />
+          <span>%</span>
         </div>
       </div>
 
@@ -94,34 +103,29 @@ export function InvoiceForm() {
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">From</h3>
           <div className="space-y-2">
-            <input
-              type="text"
+            <Input
               placeholder="Your Company Name"
-              className="w-full input"
               value={invoice.from.name}
-              onChange={e =>
+              onChange={(e) =>
                 updateInvoice({
                   from: { ...invoice.from, name: e.target.value },
                 })
               }
             />
-            <input
-              type="text"
+            <Input
               placeholder="VAT Number"
-              className="w-full input"
               value={invoice.from.vatNumber}
-              onChange={e =>
+              onChange={(e) =>
                 updateInvoice({
                   from: { ...invoice.from, vatNumber: e.target.value },
                 })
               }
             />
-            <textarea
+            <Textarea
               placeholder="Address"
-              className="w-full input"
               rows={3}
               value={invoice.from.address}
-              onChange={e =>
+              onChange={(e) =>
                 updateInvoice({
                   from: { ...invoice.from, address: e.target.value },
                 })
@@ -134,32 +138,27 @@ export function InvoiceForm() {
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Bill To</h3>
           <div className="space-y-2">
-            <input
-              type="text"
+            <Input
               placeholder="Client Company Name"
-              className="w-full input"
               value={invoice.to.name}
-              onChange={e =>
+              onChange={(e) =>
                 updateInvoice({ to: { ...invoice.to, name: e.target.value } })
               }
             />
-            <input
-              type="text"
+            <Input
               placeholder="VAT Number"
-              className="w-full input"
               value={invoice.to.vatNumber}
-              onChange={e =>
+              onChange={(e) =>
                 updateInvoice({
                   to: { ...invoice.to, vatNumber: e.target.value },
                 })
               }
             />
-            <textarea
+            <Textarea
               placeholder="Address"
-              className="w-full input"
               rows={3}
               value={invoice.to.address}
-              onChange={e =>
+              onChange={(e) =>
                 updateInvoice({ to: { ...invoice.to, address: e.target.value } })
               }
             />
@@ -167,83 +166,150 @@ export function InvoiceForm() {
         </div>
       </div>
 
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label className="block text-sm font-medium mb-1">Invoice Date</label>
+          <Input
+            type="date"
+            value={invoice.issueDate}
+            onChange={(e) => updateInvoice({ issueDate: e.target.value })}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">Due Date</label>
+          <Input
+            type="date"
+            value={invoice.dueDate}
+            onChange={(e) => updateInvoice({ dueDate: e.target.value })}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Purchase Order Number
+          </label>
+          <Input
+            value={invoice.poNumber || ''}
+            onChange={(e) => updateInvoice({ poNumber: e.target.value })}
+          />
+        </div>
+      </div>
+
       {/* Items Section */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Items</h3>
         <div className="space-y-2">
-          {invoice.items.map(item => (
-            <div key={item.id} className="flex gap-4">
-              <input
-                type="text"
+          <div className="grid grid-cols-[1fr,auto,auto,auto,auto] gap-4 font-medium px-4">
+            <div>Description</div>
+            <div>Quantity</div>
+            <div>Price</div>
+            <div>Total</div>
+            <div></div>
+          </div>
+          {invoice.items.map((item) => (
+            <div
+              key={item.id}
+              className="grid grid-cols-[1fr,auto,auto,auto,auto] gap-4 items-center"
+            >
+              <Input
                 placeholder="Description"
-                className="flex-grow input"
                 value={item.description}
-                onChange={e =>
+                onChange={(e) =>
                   updateItem(item.id, { description: e.target.value })
                 }
               />
-              <input
+              <Input
                 type="number"
-                placeholder="Qty"
-                className="w-24 input"
+                className="w-24"
                 value={item.quantity}
-                onChange={e =>
+                onChange={(e) =>
                   updateItem(item.id, {
                     quantity: parseFloat(e.target.value) || 0,
                   })
                 }
               />
-              <input
+              <Input
                 type="number"
-                placeholder="Price"
-                className="w-32 input"
+                className="w-32"
                 value={item.price}
-                onChange={e =>
+                onChange={(e) =>
                   updateItem(item.id, { price: parseFloat(e.target.value) || 0 })
                 }
               />
-              <div className="w-32 flex items-center">
+              <div className="w-32 px-4">
                 {formatCurrency(item.quantity * item.price, invoice.currency)}
               </div>
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => removeItem(item.id)}
-                className="p-2 text-red-500 hover:text-red-700"
+                className="text-red-500 hover:text-red-700"
               >
                 ×
-              </button>
+              </Button>
             </div>
           ))}
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             onClick={addItem}
-            className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
+            className="mt-4"
           >
             Add Item
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Totals Section */}
-      <div className="space-y-2 text-right">
+      <div className="flex justify-end">
+        <div className="w-64 space-y-2">
+          <div className="flex justify-between">
+            <span>Subtotal:</span>
+            <span>{formatCurrency(calculateSubtotal(), invoice.currency)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>VAT ({invoice.taxRate}%):</span>
+            <span>{formatCurrency(calculateTax(), invoice.currency)}</span>
+          </div>
+          <div className="flex justify-between font-bold text-lg border-t pt-2">
+            <span>Total:</span>
+            <span>{formatCurrency(calculateTotal(), invoice.currency)}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-4">
         <div>
-          Subtotal: {formatCurrency(calculateSubtotal(), invoice.currency)}
+          <label className="block text-sm font-medium mb-1">Notes</label>
+          <Textarea
+            placeholder="Payment terms, delivery details, or any additional notes"
+            value={invoice.notes || ''}
+            onChange={(e) => updateInvoice({ notes: e.target.value })}
+          />
         </div>
         <div>
-          VAT ({invoice.taxRate}%):{' '}
-          {formatCurrency(calculateTax(), invoice.currency)}
-        </div>
-        <div className="text-xl font-bold">
-          Total: {formatCurrency(calculateTotal(), invoice.currency)}
+          <label className="block text-sm font-medium mb-1">
+            Payment Details
+          </label>
+          <Textarea
+            placeholder="Bank account details, payment methods accepted"
+            value={invoice.paymentDetails || ''}
+            onChange={(e) => updateInvoice({ paymentDetails: e.target.value })}
+          />
         </div>
       </div>
 
       {/* Actions */}
       <div className="flex justify-end gap-4">
-        <button className="px-4 py-2 bg-secondary text-secondary-foreground rounded hover:bg-secondary/90">
+        <Button variant="outline" onClick={resetInvoice}>
+          Reset
+        </Button>
+        <Button variant="secondary" onClick={saveDraft}>
           Save Draft
-        </button>
-        <button className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90">
-          Generate PDF
-        </button>
+        </Button>
+        <Button variant="secondary" onClick={() => setIsPreview(true)}>
+          Preview
+        </Button>
+        <Button onClick={handleGeneratePDF}>Generate PDF</Button>
       </div>
     </div>
   )
