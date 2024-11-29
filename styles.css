@@ -27,3 +27,155 @@ body {
     border-radius: 8px;
     box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
 }
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.form-section {
+    margin-bottom: 2rem;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #4b5563;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.items-section {
+    margin: 2rem 0;
+}
+
+.item-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr auto;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    align-items: center;
+}
+
+button {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--secondary-color);
+}
+
+.btn-secondary {
+    background-color: #e2e8f0;
+    color: #4b5563;
+}
+
+.btn-secondary:hover {
+    background-color: #cbd5e1;
+}
+
+.totals {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 2px solid #e2e8f0;
+}
+
+.totals-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    max-width: 400px;
+    margin-left: auto;
+}
+
+.required::after {
+    content: "*";
+    color: #ef4444;
+    margin-left: 4px;
+}
+
+.invoice-number {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.btn-remove {
+    background-color: #ef4444;
+    color: white;
+    padding: 0.5rem;
+    border-radius: 4px;
+}
+
+.btn-remove:hover {
+    background-color: #dc2626;
+}
+
+@media print {
+    body {
+        padding: 0;
+        background: white;
+    }
+    .container {
+        box-shadow: none;
+        padding: 1rem;
+    }
+    .no-print {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .item-row {
+        grid-template-columns: 1fr 1fr 1fr auto;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    body {
+        padding: 1rem;
+    }
+    
+    .container {
+        padding: 1rem;
+    }
+}
