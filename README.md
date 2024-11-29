@@ -1,20 +1,20 @@
 # 2P Invoice Generator
 
-A modern, EU-compliant invoice generator with PDF export functionality. Built with HTML, CSS, and JavaScript.
+A modern, EU-compliant invoice generator with PDF export functionality.
 
 ## Features
-
 - EU VAT compliance
-- PDF generation
+- PDF generation with jsPDF
 - Responsive design
-- Modern UI
+- Modern user interface
 - Automatic calculations
 - Print-friendly layout
 
-## Setup
+## Getting Started
+1. Clone this repository
+2. Open `index.html` in a modern web browser
+3. Start creating invoices
 
-Simply open `index.html` in a modern web browser to start using the invoice generator.
-
-## License
-
-MIT
+## Requirements
+- Modern web browser
+- Internet connection (for loading CDN resources)
