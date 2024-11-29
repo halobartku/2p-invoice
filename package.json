@@ -1,17 +1,37 @@
 {
   "name": "2p-invoice",
+  "private": true,
   "version": "1.0.0",
-  "description": "EU-compliant invoice generator",
-  "main": "index.html",
+  "type": "module",
   "scripts": {
-    "start": "http-server",
-    "dev": "http-server -c-1",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview"
   },
-  "keywords": ["invoice", "pdf", "generator"],
-  "author": "",
-  "license": "MIT",
+  "dependencies": {
+    "@types/node": "^20.10.5",
+    "@types/react": "^18.2.45",
+    "@types/react-dom": "^18.2.18",
+    "autoprefixer": "^10.4.16",
+    "clsx": "^2.0.0",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^2.5.1",
+    "postcss": "^8.4.32",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tailwind-merge": "^2.1.0",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.3.3",
+    "zustand": "^4.4.7"
+  },
   "devDependencies": {
-    "http-server": "^14.1.1"
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "eslint": "^8.56.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "vite": "^5.0.10"
   }
 }
