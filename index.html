@@ -9,6 +9,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
+    <div class="theme-switch">
+        <label class="switch">
+            <input type="checkbox" id="darkModeToggle">
+            <span class="slider round"></span>
+        </label>
+        <span>Dark Mode</span>
+    </div>
+    
     <div class="container" id="invoice">
         <div class="header">
             <div>
@@ -19,7 +27,23 @@
                 <img src="/api/placeholder/200/100" alt="Company Logo" />
             </div>
         </div>
-        <!-- Content will be added in next commits -->
+
+        <div class="settings">
+            <select id="currency" onchange="updateCurrency()">
+                <option value="EUR">EUR (€)</option>
+                <option value="USD">USD ($)</option>
+                <option value="GBP">GBP (£)</option>
+            </select>
+            <input type="number" id="taxRate" value="20" min="0" max="100" step="0.1" onchange="updateTotals()">
+            <label for="taxRate">% VAT Rate</label>
+        </div>
+
+        <!-- Rest of the form structure remains the same -->
+        
+        <div class="form-actions">
+            <button class="btn-secondary" onclick="saveAsDraft()">Save Draft</button>
+            <button class="btn-primary" onclick="generatePDF()">Generate PDF</button>
+        </div>
     </div>
     <script src="script.js"></script>
 </body>
